@@ -1,0 +1,39 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "lib": [
+            "dom",
+            "dom.iterable",
+            "esnext"
+        ],
+        "allowJs": true,
+        "skipLibCheck": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "declaration": true,
+        "composite": true,
+        "outDir": "./dist",
+        "rootDir": "tonwa-uq",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "preserveSymlinks": true,
+        "sourceMap": true,
+        "forceConsistentCasingInFileNames": true,
+        "noImplicitReturns": false,
+        "noImplicitThis": true,
+        "noImplicitAny": false,
+        "suppressImplicitAnyIndexErrors": true,
+        "noUnusedLocals": false,
+        "jsx": "react-jsx",
+        "strictNullChecks": false,
+        "experimentalDecorators": true,
+        "baseUrl": "tonwa-uq/",
+        "typeRoots": [
+            "node_modules/@types",
+        ]
+    },
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}

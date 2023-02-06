@@ -1,82 +1,22 @@
-"use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.IdDivCache = exports.IdCache = void 0;
-var maxCacheSize = 10000;
-var IdCache = /** @class */ (function () {
-    function IdCache(tuidLocal) {
-        this.queue = []; // 每次使用，都排到队头
-        this.waitingIds = []; // 等待loading的
+const maxCacheSize = 10000;
+export class IdCache {
+    queue = []; // 每次使用，都排到队头
+    cache; // 已经缓冲的
+    localArr;
+    waitingIds = []; // 等待loading的
+    tuidInner;
+    constructor(tuidLocal) {
         this.cache = tuidLocal.uq.net.createObservableMap();
         this.tuidInner = tuidLocal;
         this.initLocalArr();
     }
-    IdCache.prototype.initLocalArr = function () {
+    initLocalArr() {
         this.localArr = this.tuidInner.schemaLocal.arr(this.tuidInner.name + '.ids');
-    };
-    IdCache.prototype.cacheSet = function (id, val) {
+    }
+    cacheSet(id, val) {
         this.cache.set(id, val);
-    };
-    IdCache.prototype.useId = function (id, defer) {
+    }
+    useId(id, defer) {
         if (!id)
             return;
         if (typeof id !== 'number') {
@@ -88,48 +28,48 @@ var IdCache = /** @class */ (function () {
             return;
         }
         this.tuidInner.cacheTuids(defer === true ? 70 : 20);
-        if (this.waitingIds.findIndex(function (v) { return v === id; }) >= 0) {
+        if (this.waitingIds.findIndex(v => v === id) >= 0) {
             this.moveToHead(id);
             return;
         }
         if (this.queue.length >= maxCacheSize) {
             // 缓冲已满，先去掉最不常用的
-            var r_1 = this.queue.shift();
-            if (r_1 === id) {
+            let r = this.queue.shift();
+            if (r === id) {
                 // 如果移除的，正好是现在用的，则插入
-                this.queue.push(r_1);
+                this.queue.push(r);
                 return;
             }
-            if (this.cache.has(r_1) === true) {
+            if (this.cache.has(r) === true) {
                 // 如果移除r已经缓存
-                this.cache.delete(r_1);
+                this.cache.delete(r);
             }
             else {
                 // 如果移除r还没有缓存
-                var index = this.waitingIds.findIndex(function (v) { return v === r_1; });
+                let index = this.waitingIds.findIndex(v => v === r);
                 this.waitingIds.splice(index, 1);
             }
         }
         this.waitingIds.push(id);
         this.queue.push(id);
         return;
-    };
-    IdCache.prototype.moveToHead = function (id) {
-        var index = this.queue.findIndex(function (v) { return v === id; });
+    }
+    moveToHead(id) {
+        let index = this.queue.findIndex(v => v === id);
         this.queue.splice(index, 1);
         this.queue.push(id);
-    };
-    IdCache.prototype.getValue = function (id) {
+    }
+    getValue(id) {
         return this.cache.get(id);
-    };
-    IdCache.prototype.remove = function (id) {
+    }
+    remove(id) {
         this.cache.delete(id);
-        var index = this.queue.findIndex(function (v) { return v === id; });
+        let index = this.queue.findIndex(v => v === id);
         this.queue.splice(index, 1);
         this.localArr.removeItem(id);
-    };
-    IdCache.prototype.valueFromId = function (id) {
-        var _id;
+    }
+    valueFromId(id) {
+        let _id;
         switch (typeof id) {
             case 'object':
                 _id = id.id;
@@ -140,214 +80,141 @@ var IdCache = /** @class */ (function () {
             default: return;
         }
         return this.getValue(_id);
-    };
-    IdCache.prototype.resetCache = function (id) {
+    }
+    resetCache(id) {
         this.remove(id);
         this.useId(id);
-    };
-    IdCache.prototype.cacheValue = function (val) {
+    }
+    cacheValue(val) {
         if (val === undefined)
             return false;
-        var id = this.getIdFromObj(val);
+        let id = this.getIdFromObj(val);
         if (id === undefined)
             return false;
         this.cacheSet(id, val);
         return true;
-    };
-    IdCache.prototype.getIdFromObj = function (val) { return this.tuidInner.getIdFromObj(val); };
-    IdCache.prototype.cacheIds = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var tuidValues;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.loadIds()];
-                    case 1:
-                        tuidValues = _a.sent();
-                        this.cacheIdValues(tuidValues);
-                        return [2 /*return*/];
-                }
-            });
-        });
-    };
-    IdCache.prototype.cacheIdValues = function (tuidValues) {
+    }
+    getIdFromObj(val) { return this.tuidInner.getIdFromObj(val); }
+    async cacheIds() {
+        let tuidValues = await this.loadIds();
+        this.cacheIdValues(tuidValues);
+    }
+    cacheIdValues(tuidValues) {
         if (tuidValues === undefined)
             return;
-        var tuids = this.unpackTuidIds(tuidValues);
-        for (var _i = 0, tuids_1 = tuids; _i < tuids_1.length; _i++) {
-            var tuidValue = tuids_1[_i];
+        let tuids = this.unpackTuidIds(tuidValues);
+        for (let tuidValue of tuids) {
             if (this.cacheValue(tuidValue) === true) {
                 this.cacheTuidFieldValues(tuidValue);
             }
         }
-    };
-    IdCache.prototype.modifyIds = function (ids) {
-        return __awaiter(this, void 0, void 0, function () {
-            var tuidValues, localedValues;
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.loadTuidIdsOrLocal(ids)];
-                    case 1:
-                        tuidValues = _a.sent();
-                        localedValues = tuidValues.filter(function (v) {
-                            var p = v.indexOf('\t');
-                            if (p < 0)
-                                p = v.length;
-                            var id = Number(v.substring(0, p));
-                            var val = _this.localArr.getItem(id);
-                            return (val !== undefined);
-                        });
-                        if (localedValues.length === 0)
-                            return [2 /*return*/];
-                        this.cacheIdValues(localedValues);
-                        return [2 /*return*/];
-                }
-            });
-        });
-    };
-    IdCache.prototype.loadIds = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var loadingIds;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (this.waitingIds.length === 0)
-                            return [2 /*return*/];
-                        loadingIds = __spreadArray([], this.waitingIds, true);
-                        this.waitingIds = [];
-                        return [4 /*yield*/, this.loadTuidIdsOrLocal(loadingIds)];
-                    case 1: return [2 /*return*/, _a.sent()];
-                }
-            });
-        });
-    };
-    IdCache.prototype.unpackTuidIds = function (values) {
-        return this.tuidInner.unpackTuidIds(values);
-    };
-    IdCache.prototype.cacheTuidFieldValues = function (tuidValue) {
-        this.tuidInner.cacheTuidFieldValues(tuidValue);
-    };
-    IdCache.prototype.assureObj = function (id) {
-        return __awaiter(this, void 0, void 0, function () {
-            var val, ret;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        val = this.cache.get(id);
-                        if (val !== undefined)
-                            return [2 /*return*/, val];
-                        return [4 /*yield*/, this.loadTuidIdsOrLocal([id])];
-                    case 1:
-                        ret = _a.sent();
-                        this.cacheIdValues(ret);
-                        return [2 /*return*/];
-                }
-            });
-        });
-    };
-    IdCache.prototype.loadValuesFromIds = function (netIds) {
-        return __awaiter(this, void 0, void 0, function () {
-            var netRet;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.tuidInner.loadValuesFromIds(undefined, netIds)];
-                    case 1:
-                        netRet = _a.sent();
-                        return [2 /*return*/, netRet];
-                }
-            });
-        });
-    };
-    IdCache.prototype.loadTuidIdsOrLocal = function (ids) {
-        return __awaiter(this, void 0, void 0, function () {
-            var ret, netIds, _i, ids_1, id, value, len, netRet, _loop_1, this_1, i, i;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        ret = [];
-                        netIds = [];
-                        for (_i = 0, ids_1 = ids; _i < ids_1.length; _i++) {
-                            id = ids_1[_i];
-                            value = this.localArr.getItem(id);
-                            //if (value === undefined)
-                            // 值不存在或者是空字符串，重新获取
-                            if (!value)
-                                netIds.push(id);
-                            else
-                                ret.push(value);
-                        }
-                        len = netIds.length;
-                        if (len === 0)
-                            return [2 /*return*/, ret];
-                        return [4 /*yield*/, this.loadValuesFromIds(netIds)];
-                    case 1:
-                        netRet = _a.sent();
-                        _loop_1 = function (i) {
-                            //有些id可能没有内容，不会返回
-                            //let id = netIds[i]; 
-                            var row = netRet[i];
-                            if (!row)
-                                return "continue";
-                            var p = row.indexOf('\t');
-                            if (p < 0)
-                                p = row.length;
-                            var id = Number(row.substring(0, p));
-                            var pos = netIds.findIndex(function (v) { return v === id; });
-                            if (pos >= 0)
-                                netIds.splice(pos, 1);
-                            ret.push(row);
-                            this_1.localArr.setItem(id, row);
-                        };
-                        this_1 = this;
-                        for (i = 0; i < len; i++) {
-                            _loop_1(i);
-                        }
-                        len = netIds.length;
-                        for (i = 0; i < len; i++) {
-                            this.localArr.setItem(netIds[i], '');
-                        }
-                        return [2 /*return*/, ret];
-                }
-            });
-        });
-    };
-    return IdCache;
-}());
-exports.IdCache = IdCache;
-var IdDivCache = /** @class */ (function (_super) {
-    __extends(IdDivCache, _super);
-    function IdDivCache(tuidLocal, div) {
-        var _this = _super.call(this, tuidLocal) || this;
-        _this.div = div;
-        _this.divName = div.name;
-        _this.localArr = tuidLocal.schemaLocal.arr(tuidLocal.name + '.ids.' + _this.divName);
-        return _this;
     }
-    IdDivCache.prototype.initLocalArr = function () {
+    async modifyIds(ids) {
+        let tuidValues = await this.loadTuidIdsOrLocal(ids);
+        let localedValues = tuidValues.filter(v => {
+            let p = v.indexOf('\t');
+            if (p < 0)
+                p = v.length;
+            let id = Number(v.substring(0, p));
+            let val = this.localArr.getItem(id);
+            return (val !== undefined);
+        });
+        if (localedValues.length === 0)
+            return;
+        this.cacheIdValues(localedValues);
+    }
+    async loadIds() {
+        if (this.waitingIds.length === 0)
+            return;
+        let loadingIds = [...this.waitingIds];
+        this.waitingIds = [];
+        return await this.loadTuidIdsOrLocal(loadingIds);
+    }
+    unpackTuidIds(values) {
+        return this.tuidInner.unpackTuidIds(values);
+    }
+    cacheTuidFieldValues(tuidValue) {
+        this.tuidInner.cacheTuidFieldValues(tuidValue);
+    }
+    async assureObj(id) {
+        let val = this.cache.get(id);
+        if (val !== undefined)
+            return val;
+        /*
+        switch (typeof val) {
+            case 'object': return val;
+            // case 'number': this.cache.set(id, undefined); break;
+        }
+        */
+        let ret = await this.loadTuidIdsOrLocal([id]);
+        this.cacheIdValues(ret);
+    }
+    async loadValuesFromIds(netIds) {
+        let netRet = await this.tuidInner.loadValuesFromIds(undefined, netIds);
+        return netRet;
+    }
+    async loadTuidIdsOrLocal(ids) {
+        let ret = [];
+        let netIds = [];
+        for (let id of ids) {
+            let value = this.localArr.getItem(id);
+            //if (value === undefined)
+            // 值不存在或者是空字符串，重新获取
+            if (!value)
+                netIds.push(id);
+            else
+                ret.push(value);
+        }
+        let len = netIds.length;
+        if (len === 0)
+            return ret;
+        let netRet = await this.loadValuesFromIds(netIds);
+        for (let i = 0; i < len; i++) {
+            //有些id可能没有内容，不会返回
+            //let id = netIds[i]; 
+            let row = netRet[i];
+            if (!row)
+                continue;
+            let p = row.indexOf('\t');
+            if (p < 0)
+                p = row.length;
+            let id = Number(row.substring(0, p));
+            let pos = netIds.findIndex(v => v === id);
+            if (pos >= 0)
+                netIds.splice(pos, 1);
+            ret.push(row);
+            this.localArr.setItem(id, row);
+        }
+        len = netIds.length;
+        for (let i = 0; i < len; i++) {
+            this.localArr.setItem(netIds[i], '');
+        }
+        return ret;
+    }
+}
+export class IdDivCache extends IdCache {
+    div;
+    divName;
+    constructor(tuidLocal, div) {
+        super(tuidLocal);
+        this.div = div;
+        this.divName = div.name;
+        this.localArr = tuidLocal.schemaLocal.arr(tuidLocal.name + '.ids.' + this.divName);
+    }
+    initLocalArr() {
         // 这个不需要，必须去掉
         // this.localArr = this.tuidInner.cache.arr(this.tuidInner.name + '.ids');
-    };
-    IdDivCache.prototype.getIdFromObj = function (val) { return this.div.getIdFromObj(val); };
-    IdDivCache.prototype.unpackTuidIds = function (values) {
+    }
+    getIdFromObj(val) { return this.div.getIdFromObj(val); }
+    unpackTuidIds(values) {
         return this.div.unpackTuidIds(values);
-    };
-    IdDivCache.prototype.cacheTuidFieldValues = function (tuidValue) {
+    }
+    cacheTuidFieldValues(tuidValue) {
         this.div.cacheTuidFieldValues(tuidValue);
-    };
-    IdDivCache.prototype.loadValuesFromIds = function (netIds) {
-        return __awaiter(this, void 0, void 0, function () {
-            var netRet;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.tuidInner.loadValuesFromIds(this.divName, netIds)];
-                    case 1:
-                        netRet = _a.sent();
-                        return [2 /*return*/, netRet];
-                }
-            });
-        });
-    };
-    return IdDivCache;
-}(IdCache));
-exports.IdDivCache = IdDivCache;
+    }
+    async loadValuesFromIds(netIds) {
+        let netRet = await this.tuidInner.loadValuesFromIds(this.divName, netIds);
+        return netRet;
+    }
+}
 //# sourceMappingURL=idCache.js.map

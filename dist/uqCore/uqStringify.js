@@ -1,12 +1,9 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.uqStringify = void 0;
-function uqStringify(values) {
-    var s = '{';
+export function uqStringify(values) {
+    let s = '{';
     if (values === undefined)
         return 'undefined';
-    for (var i in values) {
-        var v = values[i];
+    for (let i in values) {
+        let v = values[i];
         s += i + ': ';
         if (v === undefined) {
             s += 'undefined';
@@ -31,5 +28,4 @@ function uqStringify(values) {
     }
     return s + '}';
 }
-exports.uqStringify = uqStringify;
 //# sourceMappingURL=uqStringify.js.map

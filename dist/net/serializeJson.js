@@ -1,21 +1,18 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.deserializeJson = exports.serializeJson = void 0;
-function serializeJson(obj) {
-    var source = [];
-    var result = [];
+export function serializeJson(obj) {
+    let source = [];
+    let result = [];
     function serialize(obj) {
-        var p = source.findIndex(function (v) { return v === obj; });
+        let p = source.findIndex(v => v === obj);
         if (p <= 0) {
             p = result.length;
             source.push(obj);
             if (Array.isArray(obj) === true) {
-                var retObj = [];
+                let retObj = [];
                 result.push(retObj);
                 serializeArr(obj, retObj);
             }
             else {
-                var retObj = {};
+                let retObj = {};
                 result.push(retObj);
                 serializeObj(obj, retObj);
             }
@@ -23,13 +20,13 @@ function serializeJson(obj) {
         return '___' + p;
     }
     function serializeArr(obj, retObj) {
-        var len = obj.length;
-        for (var i = 0; i < len; i++) {
+        let len = obj.length;
+        for (let i = 0; i < len; i++) {
             retObj[i] = serial(obj[i]);
         }
     }
     function serializeObj(obj, retObj) {
-        for (var i in obj) {
+        for (let i in obj) {
             retObj[i] = serial(obj[i]);
         }
     }
@@ -42,17 +39,16 @@ function serializeJson(obj) {
     }
     serialize(obj);
     try {
-        var ret = JSON.stringify(result);
+        let ret = JSON.stringify(result);
         return ret;
     }
     catch (err) {
         debugger;
     }
 }
-exports.serializeJson = serializeJson;
-function deserializeJson(str) {
-    var arr = JSON.parse(str);
-    var obj = arr[0];
+export function deserializeJson(str) {
+    let arr = JSON.parse(str);
+    let obj = arr[0];
     deserialize(obj);
     return obj;
     function deserialize(obj) {
@@ -64,21 +60,21 @@ function deserializeJson(str) {
         }
     }
     function deserializeArr(obj) {
-        var len = obj.length;
-        for (var i = 0; i < len; i++) {
+        let len = obj.length;
+        for (let i = 0; i < len; i++) {
             obj[i] = deserial(obj[i]);
         }
     }
     function deserializeObj(obj) {
-        for (var i in obj) {
+        for (let i in obj) {
             obj[i] = deserial(obj[i]);
         }
     }
     function deserial(obj) {
         if (typeof obj === 'string') {
             if (obj.startsWith('___') === true) {
-                var p = Number(obj.substr(3));
-                var ret = arr[p];
+                let p = Number(obj.substr(3));
+                let ret = arr[p];
                 deserialize(ret);
                 return ret;
             }
@@ -86,5 +82,4 @@ function deserializeJson(str) {
         return obj;
     }
 }
-exports.deserializeJson = deserializeJson;
 //# sourceMappingURL=serializeJson.js.map

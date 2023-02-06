@@ -1,30 +1,18 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./uqsLoader"), exports);
-__exportStar(require("./uqMan"), exports);
-__exportStar(require("./entity"), exports);
-__exportStar(require("./action"), exports);
-__exportStar(require("./query"), exports);
-__exportStar(require("./sheet"), exports);
-__exportStar(require("./tuid"), exports);
-__exportStar(require("./book"), exports);
-__exportStar(require("./map"), exports);
-__exportStar(require("./history"), exports);
-__exportStar(require("./pending"), exports);
-__exportStar(require("./uqsMan"), exports);
-__exportStar(require("./enum"), exports);
-__exportStar(require("./ID"), exports);
-__exportStar(require("./uqStringify"), exports);
-__exportStar(require("./caller"), exports);
-__exportStar(require("./uqUnit"), exports);
+export * from './uqsLoader';
+export * from './uqMan';
+export * from './entity';
+export * from './action';
+export * from './query';
+export * from './sheet';
+export * from './tuid';
+export * from './book';
+export * from './map';
+export * from './history';
+export * from './pending';
+export * from './uqsMan';
+export * from './enum';
+export * from './ID';
+export * from './uqStringify';
+export * from './caller';
+export * from './uqUnit';
 //# sourceMappingURL=index.js.map

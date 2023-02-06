@@ -1,1 +1,1 @@
-{"version":3,"file":"propertyOf.js","sourceRoot":"","sources":["../../tonwa-uq/tool/propertyOf.ts"],"names":[],"mappings":";;;AAAA,SAAgB,UAAU,CAAI,IAAa;IACvC,OAAO,IAAI,CAAC;AAChB,CAAC;AAFD,gCAEC"}
+{"version":3,"file":"propertyOf.js","sourceRoot":"","sources":["../../tonwa-uq/tool/propertyOf.ts"],"names":[],"mappings":"AAAA,MAAM,UAAU,UAAU,CAAI,IAAa;IACvC,OAAO,IAAI,CAAC;AAChB,CAAC"}

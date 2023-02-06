@@ -1,64 +1,36 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Entity = void 0;
-var tool_1 = require("../tool");
-var tab = '\t';
-var ln = '\n';
-var chars = '\\ntbfvr';
-var codeBackSlash = chars.charCodeAt(0);
-var codeN = chars.charCodeAt(1);
-var codeT = chars.charCodeAt(2);
-var codeB = chars.charCodeAt(3);
-var codeF = chars.charCodeAt(4);
-var codeV = chars.charCodeAt(5);
-var codeR = chars.charCodeAt(6);
-var codes = '\n\t\b\f\v\r';
-var codeBN = codes.charCodeAt(0);
-var codeBT = codes.charCodeAt(1);
-var codeBB = codes.charCodeAt(2);
-var codeBF = codes.charCodeAt(3);
-var codeBV = codes.charCodeAt(4);
-var codeBR = codes.charCodeAt(5);
-var Entity = /** @class */ (function () {
-    function Entity(uq, name, typeId) {
-        this.ver = 0;
-        this.fieldMaps = {};
+import { getObjPropIgnoreCase } from '../tool';
+const tab = '\t';
+const ln = '\n';
+const chars = '\\ntbfvr';
+const codeBackSlash = chars.charCodeAt(0);
+const codeN = chars.charCodeAt(1);
+const codeT = chars.charCodeAt(2);
+const codeB = chars.charCodeAt(3);
+const codeF = chars.charCodeAt(4);
+const codeV = chars.charCodeAt(5);
+const codeR = chars.charCodeAt(6);
+const codes = '\n\t\b\f\v\r';
+const codeBN = codes.charCodeAt(0);
+const codeBT = codes.charCodeAt(1);
+const codeBB = codes.charCodeAt(2);
+const codeBF = codes.charCodeAt(3);
+const codeBV = codes.charCodeAt(4);
+const codeBR = codes.charCodeAt(5);
+export class Entity {
+    jName;
+    schema;
+    ver = 0;
+    sys;
+    uq;
+    name;
+    typeId;
+    schemaLocal;
+    uqApi;
+    get sName() { return this.jName || this.name; }
+    fields;
+    arrFields;
+    returns;
+    constructor(uq, name, typeId) {
         this.uq = uq;
         this.name = name;
         this.typeId = typeId;
@@ -66,109 +38,86 @@ var Entity = /** @class */ (function () {
         this.schemaLocal = this.uq.localMap.item(this.name); // new EntityCache(this);
         this.uqApi = this.uq.uqApi;
     }
-    Object.defineProperty(Entity.prototype, "sName", {
-        get: function () { return this.jName || this.name; },
-        enumerable: false,
-        configurable: true
-    });
-    Entity.prototype.fieldMap = function (arr) {
+    face; // 对应字段的label, placeHolder等等的中文，或者语言的翻译
+    fieldMaps = {};
+    fieldMap(arr) {
         if (arr === undefined)
             arr = '$';
-        var ret = this.fieldMaps[arr];
+        let ret = this.fieldMaps[arr];
         if (ret === undefined) {
-            var fields = void 0;
+            let fields;
             if (arr === '$')
                 fields = this.fields;
             else if (this.arrFields !== undefined) {
-                var arrFields = this.arrFields.find(function (v) { return v.name === arr; });
+                let arrFields = this.arrFields.find(v => v.name === arr);
                 if (arrFields !== undefined)
                     fields = arrFields.fields;
             }
             else if (this.returns !== undefined) {
-                var arrFields = this.returns.find(function (v) { return v.name === arr; });
+                let arrFields = this.returns.find(v => v.name === arr);
                 if (arrFields !== undefined)
                     fields = arrFields.fields;
             }
             if (fields === undefined)
                 return {};
             ret = {};
-            for (var _i = 0, fields_1 = fields; _i < fields_1.length; _i++) {
-                var f = fields_1[_i];
+            for (let f of fields)
                 ret[f.name] = f;
-            }
             this.fieldMaps[arr] = ret;
         }
         return ret;
-    };
-    Entity.prototype.loadSchema = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var schema;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (this.schema !== undefined)
-                            return [2 /*return*/];
-                        schema = this.schemaLocal.get();
-                        if (!!schema) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.uq.loadEntitySchema(this.name)];
-                    case 1:
-                        schema = _a.sent();
-                        _a.label = 2;
-                    case 2:
-                        //this.setSchema(schema);
-                        //this.buildFieldsTuid();
-                        this.buildSchema(schema);
-                        return [4 /*yield*/, this.loadValues()];
-                    case 3:
-                        _a.sent();
-                        return [2 /*return*/];
-                }
-            });
-        });
-    };
-    Entity.prototype.buildSchema = function (schema) {
+    }
+    async loadSchema() {
+        if (this.schema !== undefined)
+            return;
+        let schema = this.schemaLocal.get();
+        if (!schema) {
+            schema = await this.uq.loadEntitySchema(this.name);
+        }
+        //this.setSchema(schema);
+        //this.buildFieldsTuid();
+        this.buildSchema(schema);
+        await this.loadValues();
+    }
+    buildSchema(schema) {
         this.setSchema(schema);
         this.buildFieldsTuid();
         //await this.loadValues();
-    };
-    Entity.prototype.loadValues = function () {
-        return __awaiter(this, void 0, void 0, function () { return __generator(this, function (_a) {
-            return [2 /*return*/];
-        }); });
-    };
+    }
+    async loadValues() { }
     // 如果要在setSchema里面保存cache，必须先调用clearSchema
-    Entity.prototype.clearSchema = function () {
+    clearSchema() {
         this.schema = undefined;
-    };
-    Entity.prototype.setSchema = function (schema) {
+    }
+    setSchema(schema) {
         if (schema === undefined)
             return;
-        var name = schema.name, version = schema.version, permit = schema.permit;
+        let { name, version, permit } = schema;
         this.ver = version || 0;
         this.setJName(name);
         this.schemaLocal.set(schema);
         this.schema = schema;
         this.buildFieldsTuid();
         this.setPermitRole(this.getPermitRole(permit));
-    };
-    Entity.prototype.getPermitRole = function (permit) {
+    }
+    getPermitRole(permit) {
         if (permit === undefined)
             return undefined;
-        var p = permit.indexOf('+');
+        let p = permit.indexOf('+');
         if (p < 0)
             return permit;
         return permit.substring(0, p);
-    };
-    Entity.prototype.setPermitRole = function (role) {
-    };
-    Entity.prototype.setJName = function (name) {
+    }
+    setPermitRole(role) {
+    }
+    setJName(name) {
         if (name !== this.name)
             this.jName = name;
-    };
-    Entity.prototype.setKeys = function () {
-    };
-    Entity.prototype.buildFieldsTuid = function () {
-        var _a = this.schema, fields = _a.fields, arrs = _a.arrs, returns = _a.returns;
+    }
+    setKeys() {
+    }
+    buildFieldsTuid() {
+        let { fields, arrs, returns } = this.schema;
         this.fields = fields;
         this.setKeys();
         this.uq.buildFieldTuid(fields);
@@ -176,76 +125,73 @@ var Entity = /** @class */ (function () {
         this.uq.buildArrFieldsTuid(arrs, fields);
         this.returns = returns;
         this.uq.buildArrFieldsTuid(returns, fields);
-    };
-    Entity.prototype.schemaStringify = function () {
-        return JSON.stringify(this.schema, function (key, value) {
+    }
+    schemaStringify() {
+        return JSON.stringify(this.schema, (key, value) => {
             if (key === '_tuid')
                 return undefined;
             return value;
         }, 4);
-    };
-    Entity.prototype.tuidFromName = function (fieldName, arrName) {
+    }
+    tuidFromName(fieldName, arrName) {
         if (this.schema === undefined)
             return;
-        var _a = this.schema, fields = _a.fields, arrs = _a.arrs;
-        var entities = this.uq;
+        let { fields, arrs } = this.schema;
+        let entities = this.uq;
         function getTuid(fn, fieldArr) {
             if (fieldArr === undefined)
                 return;
-            var f = fieldArr.find(function (v) { return v.name === fn; });
+            let f = fieldArr.find(v => v.name === fn);
             if (f === undefined)
                 return;
             return entities.getTuid(f.tuid);
         }
-        var fn = fieldName.toLowerCase();
+        let fn = fieldName.toLowerCase();
         if (arrName === undefined)
             return getTuid(fn, fields);
         if (arrs === undefined)
             return;
-        var an = arrName.toLowerCase();
-        var arr = arrs.find(function (v) { return v.name === an; });
+        let an = arrName.toLowerCase();
+        let arr = arrs.find(v => v.name === an);
         if (arr === undefined)
             return;
         return getTuid(fn, arr.fields);
-    };
-    Entity.prototype.buildParams = function (params) {
-        var result = {};
-        var fields = this.fields;
+    }
+    buildParams(params) {
+        let result = {};
+        let fields = this.fields;
         if (fields !== undefined)
             this.buildFieldsParams(result, fields, params);
-        var arrs = this.arrFields;
+        let arrs = this.arrFields;
         if (arrs !== undefined) {
-            for (var _i = 0, arrs_1 = arrs; _i < arrs_1.length; _i++) {
-                var arr = arrs_1[_i];
-                var name_1 = arr.name, fields_2 = arr.fields;
-                var paramsArr = params[name_1];
+            for (let arr of arrs) {
+                let { name, fields } = arr;
+                let paramsArr = params[name];
                 if (paramsArr === undefined)
                     continue;
-                var arrResult = [];
-                result[name_1] = arrResult;
-                for (var _a = 0, params_1 = params; _a < params_1.length; _a++) {
-                    var pa = params_1[_a];
-                    var rowResult = {};
-                    this.buildFieldsParams(rowResult, fields_2, pa);
+                let arrResult = [];
+                result[name] = arrResult;
+                for (let pa of params) {
+                    let rowResult = {};
+                    this.buildFieldsParams(rowResult, fields, pa);
                     arrResult.push(rowResult);
                 }
             }
         }
         return result;
-    };
-    Entity.prototype.buildFieldsParams = function (result, fields, params) {
-        for (var _i = 0, fields_3 = fields; _i < fields_3.length; _i++) {
-            var field = fields_3[_i];
-            var name_2 = field.name, type = field.type;
-            var d = params[name_2];
-            var val = void 0;
+    }
+    buildFieldsParams(result, fields, params) {
+        for (let field of fields) {
+            let { name, type } = field;
+            let d = params[name];
+            let val;
             switch (type) {
                 case 'datetime':
                     val = this.buildDateTimeParam(d);
                     break;
                 case 'date':
                     if (d instanceof Date) {
-                        val = "".concat(d.getFullYear(), "-").concat(d.getMonth() + 1, "-").concat(d.getDate());
+                        val = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
                     }
                     else {
                         val = d;
@@ -261,7 +207,7 @@ var Entity = /** @class */ (function () {
                                 val = d;
                                 break;
                             }
-                            var tuid = field._tuid;
+                            let tuid = field._tuid;
                             if (tuid === undefined)
                                 val = d.id;
                             else
@@ -270,11 +216,11 @@ var Entity = /** @class */ (function () {
                     }
                     break;
             }
-            result[name_2] = val;
+            result[name] = val;
         }
-    };
-    Entity.prototype.buildDateTimeParam = function (val) {
-        var dt;
+    }
+    buildDateTimeParam(val) {
+        let dt;
         switch (typeof val) {
             default:
                 debugger;
@@ -289,9 +235,9 @@ var Entity = /** @class */ (function () {
                 break;
         }
         return Math.floor(dt.getTime() / 1000);
-    };
-    Entity.prototype.buildDateParam = function (val) {
-        var dt;
+    }
+    buildDateParam(val) {
+        let dt;
         switch (typeof val) {
             default:
                 debugger;
@@ -305,29 +251,28 @@ var Entity = /** @class */ (function () {
                 dt = new Date(val);
                 break;
         }
-        var ret = dt.toISOString();
-        var p = ret.indexOf('T');
+        let ret = dt.toISOString();
+        let p = ret.indexOf('T');
         return p > 0 ? ret.substr(0, p) : ret;
-    };
-    Entity.prototype.pack = function (data) {
-        var ret = [];
-        var fields = this.fields;
+    }
+    pack(data) {
+        let ret = [];
+        let fields = this.fields;
         if (fields !== undefined)
             this.packRow(ret, fields, data);
-        var arrs = this.arrFields;
+        let arrs = this.arrFields;
         if (arrs !== undefined) {
-            for (var _i = 0, arrs_2 = arrs; _i < arrs_2.length; _i++) {
-                var arr = arrs_2[_i];
-                var name_3 = arr.name, fields_4 = arr.fields;
-                var arrData = (0, tool_1.getObjPropIgnoreCase)(data, name_3);
+            for (let arr of arrs) {
+                let { name, fields } = arr;
+                let arrData = getObjPropIgnoreCase(data, name);
                 //if (!arrData) arrData = data[name.toLowerCase()];
-                this.packArr(ret, fields_4, arrData);
+                this.packArr(ret, fields, arrData);
             }
         }
         return ret.join('');
-    };
-    Entity.prototype.escape = function (row, field) {
-        var d = row[field.name];
+    }
+    escape(row, field) {
+        let d = row[field.name];
         if (d === null)
             return '';
         switch (field.type) {
@@ -337,15 +282,15 @@ var Entity = /** @class */ (function () {
                 switch (typeof d) {
                     default: return d;
                     case 'object':
-                        var tuid = field._tuid;
+                        let tuid = field._tuid;
                         if (tuid === undefined)
                             return d.id;
                         return tuid.getIdFromObj(d);
                     case 'string':
-                        var len = d.length;
-                        var r = '', p = 0;
-                        for (var i = 0; i < len; i++) {
-                            var c = d.charCodeAt(i), ch = void 0;
+                        let len = d.length;
+                        let r = '', p = 0;
+                        for (let i = 0; i < len; i++) {
+                            let c = d.charCodeAt(i), ch;
                             switch (c) {
                                 default: continue;
                                 case codeBackSlash:
@@ -377,29 +322,28 @@ var Entity = /** @class */ (function () {
                     case 'undefined': return '';
                 }
         }
-    };
-    Entity.prototype.packRow = function (result, fields, data) {
-        var len = fields.length;
+    }
+    packRow(result, fields, data) {
+        let len = fields.length;
         if (len === 0) {
             result.push(ln);
             return;
         }
-        var ret = '';
+        let ret = '';
         ret += this.escape(data, fields[0]);
-        for (var i = 1; i < len; i++) {
-            var f = fields[i];
+        for (let i = 1; i < len; i++) {
+            let f = fields[i];
             ret += tab + this.escape(data, f);
         }
         result.push(ret + ln);
-    };
-    Entity.prototype.packArr = function (result, fields, data) {
+    }
+    packArr(result, fields, data) {
         if (data !== undefined) {
             if (data.length === 0) {
                 result.push(ln);
             }
             else {
-                for (var _i = 0, data_1 = data; _i < data_1.length; _i++) {
-                    var row = data_1[_i];
+                for (let row of data) {
                     this.packRow(result, fields, row);
                 }
             }
@@ -408,85 +352,79 @@ var Entity = /** @class */ (function () {
             result.push(ln);
         }
         result.push(ln);
-    };
-    Entity.prototype.cacheFieldsInValue = function (values, fields) {
-        for (var _i = 0, _a = fields; _i < _a.length; _i++) {
-            var f = _a[_i];
-            var name_4 = f.name, _tuid = f._tuid;
+    }
+    cacheFieldsInValue(values, fields) {
+        for (let f of fields) {
+            let { name, _tuid } = f;
             if (_tuid === undefined)
                 continue;
-            var id = values[name_4];
+            let id = values[name];
             //_tuid.useId(id);
-            values[name_4] = _tuid.boxId(id);
+            values[name] = _tuid.boxId(id);
         }
-    };
-    Entity.prototype.unpackTuidIdsOfFields = function (values, fields) {
+    }
+    unpackTuidIdsOfFields(values, fields) {
         if (fields === undefined) {
             return values;
         }
-        var ret = [];
-        for (var _i = 0, values_1 = values; _i < values_1.length; _i++) {
-            var ln_1 = values_1[_i];
-            if (!ln_1)
+        let ret = [];
+        for (let ln of values) {
+            if (!ln)
                 continue;
-            var len = ln_1.length;
-            var p = 0;
+            let len = ln.length;
+            let p = 0;
             while (p < len) {
-                var ch = ln_1.charCodeAt(p);
+                let ch = ln.charCodeAt(p);
                 if (ch === 10) {
                     ++p;
                     break;
                 }
-                var row = {};
-                p = this.unpackRow(row, fields, ln_1, p);
+                let row = {};
+                p = this.unpackRow(row, fields, ln, p);
                 ret.push(row);
             }
         }
         return ret;
-    };
-    Entity.prototype.unpackSheet = function (data) {
-        var ret = {}; //new this.newMain();
+    }
+    unpackSheet(data) {
+        let ret = {}; //new this.newMain();
         //if (schema === undefined || data === undefined) return;
-        var fields = this.fields;
-        var p = 0;
+        let fields = this.fields;
+        let p = 0;
         if (fields !== undefined)
             p = this.unpackRow(ret, fields, data, p);
-        var arrs = this.arrFields; //schema['arrs'];
+        let arrs = this.arrFields; //schema['arrs'];
         if (arrs !== undefined) {
-            for (var _i = 0, arrs_3 = arrs; _i < arrs_3.length; _i++) {
-                var arr = arrs_3[_i];
+            for (let arr of arrs) {
                 p = this.unpackArr(ret, arr, data, p);
             }
         }
         return ret;
-    };
-    Entity.prototype.unpackReturns = function (data, returns) {
+    }
+    unpackReturns(data, returns) {
         if (data === undefined)
             debugger;
-        var ret = {};
-        var p = 0;
-        var arrs = returns || this.returns;
+        let ret = {};
+        let p = 0;
+        let arrs = returns || this.returns;
         if (arrs !== undefined) {
-            for (var _i = 0, arrs_4 = arrs; _i < arrs_4.length; _i++) {
-                var arr = arrs_4[_i];
+            for (let arr of arrs) {
                 p = this.unpackArr(ret, arr, data, p);
             }
         }
         return ret;
-    };
+    }
     // ch=8 backspace, 有什么特别意义吗？看不懂 2022-8-16
     // 根据代码看起来，像是null的意思
-    Entity.prototype.unpackRow = function (ret, fields, data, p, sep) {
-        var _this = this;
-        if (sep === void 0) { sep = 9; }
-        var ch0 = 0, ch = 0, c = p, i = 0, len = data.length, fLen = fields.length;
-        var setFieldValue = function () {
-            var f = fields[i];
-            var name = f.name;
+    unpackRow(ret, fields, data, p, sep = 9) {
+        let ch0 = 0, ch = 0, c = p, i = 0, len = data.length, fLen = fields.length;
+        const setFieldValue = () => {
+            let f = fields[i];
+            let { name } = f;
             if (ch0 !== 8) {
                 if (p > c) {
-                    var v = data.substring(c, p);
-                    ret[name] = _this.to(ret, v, f);
+                    let v = data.substring(c, p);
+                    ret[name] = this.to(ret, v, f);
                 }
             }
             else {
@@ -523,16 +461,16 @@ var Entity = /** @class */ (function () {
                 }
             }
             else if (ch === 10) {
-                var f = fields[i];
-                var name_5 = f.name;
+                let f = fields[i];
+                let { name } = f;
                 if (ch0 !== 8) {
                     if (p > c) {
-                        var v = data.substring(c, p);
-                        ret[name_5] = this.to(ret, v, f);
+                        let v = data.substring(c, p);
+                        ret[name] = this.to(ret, v, f);
                     }
                 }
                 else {
-                    ret[name_5] = null;
+                    ret[name] = null;
                 }
                 ++p;
                 ++i;
@@ -549,8 +487,8 @@ var Entity = /** @class */ (function () {
         }
         */
         return len;
-    };
-    Entity.prototype.to = function (ret, v, f) {
+    }
+    to(ret, v, f) {
         switch (f.type) {
             default: return v;
             case 'text':
@@ -559,8 +497,8 @@ var Entity = /** @class */ (function () {
             //case 'time':
             case 'datetime':
             case 'timestamp':
-                var n = Number(v);
-                var date = isNaN(n) === true ? new Date(v) : new Date(n * 1000);
+                let n = Number(v);
+                let date = isNaN(n) === true ? new Date(v) : new Date(n * 1000);
                 return date;
             /*
             case 'date':
@@ -577,28 +515,28 @@ var Entity = /** @class */ (function () {
             case 'double':
                 return Number(v);
             case 'id':
-                var id = Number(v);
-                var _tuid = f._tuid;
+                let id = Number(v);
+                let { _tuid } = f;
                 if (_tuid === undefined)
                     return id;
                 return _tuid.boxId(id);
         }
-    };
-    Entity.prototype.reverseNT = function (text) {
+    }
+    reverseNT(text) {
         if (text === undefined)
             return;
         if (text === null)
             return;
-        var len = text.length;
-        var r = '';
-        var p = 0;
-        for (var i = 0; i < len; i++) {
-            var c = text.charCodeAt(i);
+        let len = text.length;
+        let r = '';
+        let p = 0;
+        for (let i = 0; i < len; i++) {
+            let c = text.charCodeAt(i);
             if (c === codeBackSlash) {
                 if (i === len - 1)
                     break;
-                var c1 = text.charCodeAt(i + 1);
-                var ch = void 0;
+                let c1 = text.charCodeAt(i + 1);
+                let ch;
                 switch (c1) {
                     default: continue;
                     case codeBackSlash:
@@ -630,13 +568,13 @@ var Entity = /** @class */ (function () {
         }
         r += text.substring(p, len);
         return r;
-    };
-    Entity.prototype.unpackArr = function (ret, arr, data, p) {
-        var p0 = p;
-        var vals = [], len = data.length;
-        var name = arr.name, fields = arr.fields;
+    }
+    unpackArr(ret, arr, data, p) {
+        let p0 = p;
+        let vals = [], len = data.length;
+        let { name, fields } = arr;
         while (p < len) {
-            var ch = data.charCodeAt(p);
+            let ch = data.charCodeAt(p);
             if (ch === 10) {
                 if (p === p0) {
                     ch = data.charCodeAt(p);
@@ -648,14 +586,12 @@ var Entity = /** @class */ (function () {
                 ++p;
                 break;
             }
-            var val = {}; //new creater();
+            let val = {}; //new creater();
             vals.push(val);
             p = this.unpackRow(val, fields, data, p);
         }
         ret[name] = vals;
         return p;
-    };
-    return Entity;
-}());
-exports.Entity = Entity;
+    }
+}
 //# sourceMappingURL=entity.js.map

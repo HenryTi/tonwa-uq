@@ -783,7 +783,8 @@ export class UqMan {
         return ret;
     }
     IDNO = async (param) => {
-        return await this.apiIDNO(param, EnumResultType.data);
+        let ret = await this.apiIDNO(param, EnumResultType.data);
+        return ret[0]?.no;
     };
     IDEntity = (typeId) => {
         return this.entityTypes[typeId];

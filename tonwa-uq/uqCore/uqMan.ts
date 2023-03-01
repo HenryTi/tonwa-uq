@@ -1011,14 +1011,15 @@ export class UqMan {
         return await this.apiIDTv(ids, EnumResultType.sql);
     }
 
-    private async apiIDNO(param: ParamIDNO, resultType: EnumResultType): Promise<string> {
+    private async apiIDNO(param: ParamIDNO, resultType: EnumResultType): Promise<{ no: string }[]> {
         let { ID, stamp } = param;
         let ret = await this.apiPost('id-no', resultType, { ID: entityName(ID), stamp });
         return ret;
     }
 
     protected IDNO = async (param: ParamIDNO): Promise<string> => {
-        return await this.apiIDNO(param, EnumResultType.data);
+        let ret = await this.apiIDNO(param, EnumResultType.data);
+        return (ret[0] as any)?.no;
     }
 
     protected IDEntity = (typeId: number): ID => {
@@ -1026,7 +1027,7 @@ export class UqMan {
     };
 
     protected $IDNO = async (param: ParamIDNO): Promise<string> => {
-        return await this.apiIDNO(param, EnumResultType.sql);
+        return await this.apiIDNO(param, EnumResultType.sql) as any as string;
     }
 
     private async apiIDDetailGet(param: ParamIDDetailGet, resultType: EnumResultType): Promise<any> {

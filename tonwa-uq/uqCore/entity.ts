@@ -23,7 +23,7 @@ const codeBV = codes.charCodeAt(4);
 const codeBR = codes.charCodeAt(5);
 
 export abstract class Entity {
-    private jName: string;
+    jName: string;
     schema: any;
     ver: number = 0;
     sys?: boolean;
@@ -33,14 +33,15 @@ export abstract class Entity {
     readonly schemaLocal: LocalCache;
     readonly uqApi: UqApi;
     abstract get typeName(): string;
-    get sName(): string { return this.jName || this.name }
+    // get sName(): string { return this.name || this.jname }
     fields: Field[];
     arrFields: ArrFields[];
     returns: ArrFields[];
 
     constructor(uq: UqMan, name: string, typeId: number) {
+        if (name === undefined) debugger;
         this.uq = uq;
-        this.name = name;
+        this.name = name.toLowerCase();
         this.typeId = typeId;
         this.sys = this.name.indexOf('$') >= 0;
         this.schemaLocal = this.uq.localMap.item(this.name); // new EntityCache(this);
@@ -224,7 +225,7 @@ export abstract class Entity {
         let dt: Date;
         switch (typeof val) {
             default: debugger; throw new Error('escape datetime field in pack data error: value=' + val);
-            case 'undefined': return undefined;
+            case 'undefined': return '';
             case 'object': dt = (val as Date); break;
             case 'string':
             case 'number': dt = new Date(val); break;
@@ -393,6 +394,7 @@ export abstract class Entity {
 
     // ch=8 backspace, 有什么特别意义吗？看不懂 2022-8-16
     // 根据代码看起来，像是null的意思
+    // 2023-3-16：ch=8，就是null
     protected unpackRow(ret: any, fields: Field[], data: string, p: number, sep: number = 9): number {
         let ch0 = 0, ch = 0, c = p, i = 0, len = data.length, fLen = fields.length;
         const setFieldValue = () => {
@@ -464,23 +466,17 @@ export abstract class Entity {
         return len;
     }
 
-    private to(ret: any, v: string, f: Field): any {
+    protected to(ret: any, v: string, f: Field): any {
         switch (f.type) {
             default: return v;
             case 'text':
             case 'char':
                 return this.reverseNT(v);
-            //case 'time':
             case 'datetime':
             case 'timestamp':
                 let n = Number(v);
                 let date = isNaN(n) === true ? new Date(v) : new Date(n * 1000);
                 return date;
-            /*
-            case 'date':
-                let parts = v.split('-');
-                return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-            */
             case 'enum':
             case 'tinyint':
             case 'smallint':

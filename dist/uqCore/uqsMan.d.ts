@@ -5,18 +5,15 @@ export declare class UQsMan {
     private readonly net;
     private readonly uqsSchema;
     private collection;
-    proxy: any;
     uqMans: UqMan[];
     constructor(net: Net, uqsSchema: {
         [uq: string]: any;
     });
-    buildUqs(uqDataArr: UqData[], version: string, uqConfigs: UqConfig[], isBuildingUQ: boolean): Promise<string[]>;
+    buildUqs(uqDataArr: UqData[], version: string, uqConfigs: UqConfig[], isBuildingUQ: boolean): void;
     uq(uqName: string): UqMan;
     getUqUserRoles(uqLower: string): Promise<string[]>;
-    init(uqsData: UqData[]): Promise<void>;
-    load(): Promise<string[]>;
-    private buildUQs;
-    private errUndefinedUq;
+    init(uqsData: UqData[]): void;
+    buildUqEntities(): void;
     getUqMans(): UqMan[];
     setTuidImportsLocal(): string[];
     private setInner;

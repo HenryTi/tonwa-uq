@@ -1,19 +1,18 @@
 /* eslint-disable */
 import { UqApi, UqData } from '../net';
 import { Tuid, TuidDiv, TuidImport, TuidInner, TuidBox, TuidsCache } from './tuid';
-import { Action, UqAction } from './action';
+import { Action } from './action';
 import { Sheet } from './sheet';
-import { Query, UqQuery } from './query';
+import { Query } from './query';
 import { Book } from './book';
 import { History } from './history';
 import { Map } from './map';
 import { Pending } from './pending';
-import { capitalCase, LocalCache, LocalMap, UqConfig, UqError } from '../tool';
+import { capitalCase, LocalCache, LocalMap, UqConfig } from '../tool';
 import { UqEnum } from './enum';
 import { Entity } from './entity';
 import { ID, IX, IDX } from './ID';
 import { Net } from '../net';
-import { UqUnit } from './uqUnit';
 
 export type FieldType = 'id' | 'tinyint' | 'smallint' | 'int' | 'bigint' | 'dec' | 'float' | 'double' | 'char' | 'text'
     | 'datetime' | 'date' | 'time' | 'timestamp' | 'enum';
@@ -249,11 +248,16 @@ function IDPath(path: string): string { return path; }
 enum EnumResultType { data, sql };
 
 export interface Uq {
-    $: Uq;
-    $name: string;
+    $: UqMan;
+    // $name: string;
+    // $setUnit(unit: number): void;
     Role: { [key: string]: string[] };
     idObj<T = any>(id: number): Promise<T>;
+    idJoins(id: number): Promise<{ ID: ID; main: [string, any]; joins: [string, any[]][]; }>;
+    idCache<T = any>(id: number): T;
     IDValue<T>(type: string, value: string): T;
+    Biz(id: number, act: string): Promise<void>;
+    BizSheetAct(id: number, detail: string, act: string): Promise<any[]>;
     Acts(param: any): Promise<any>;
     ActIX<T>(param: ParamActIX<T>): Promise<number[]>;
     ActIXSort(param: ParamActIXSort): Promise<void>;
@@ -262,6 +266,7 @@ export interface Uq {
     QueryID<T>(param: ParamQueryID): Promise<T[]>;
     IDNO(param: ParamIDNO): Promise<string>;
     IDEntity(typeId: number): ID;
+    IDFromName(IDName: string): ID;
     ID<T = any>(param: ParamID): Promise<T[]>;
     IXr<T>(param: ParamIX): Promise<T[]>; // IX id 反查IX list
     KeyID<T>(param: ParamKeyID): Promise<T[]>;
@@ -317,6 +322,8 @@ export class UqMan {
     readonly id: number;
     readonly net: Net;
     readonly uqApi: UqApi;
+    readonly baseUrl = 'tv/';
+    unit: number;
     proxy: any;
     $proxy: any;
 
@@ -325,6 +332,7 @@ export class UqMan {
 
     constructor(net: Net, uqData: UqData, uqSchema: any) {
         this.net = net;
+        this.unit = 0;
         let { id, uqOwner, uqName, newVersion } = uqData;
         this.newVersion = newVersion;
         this.uqOwner = uqOwner;
@@ -337,13 +345,16 @@ export class UqMan {
         this.localModifyMax = this.localMap.child('$modifyMax');
         this.localEntities = this.localMap.child('$access');
         this.tuidsCache = new TuidsCache(this);
-        let baseUrl = 'tv/';
-        this.uqApi = new UqApi(this.net, baseUrl, this.name /* this.uqOwner, this.uqName */);
+        this.uqApi = new UqApi(this); // this.net, baseUrl, this.name /* this.uqOwner, this.uqName */);
     }
 
     getID(name: string): ID { return this.ids[name.toLowerCase()]; };
     getIDX(name: string): IDX { return this.idxs[name.toLowerCase()]; };
     getIX(name: string): IX { return this.ixs[name.toLowerCase()]; };
+
+    clearLocalEntites() {
+        this.localMap.removeItem(this.name);
+    }
 
     private roles: string[];
     async getRoles(): Promise<string[]> {
@@ -386,6 +397,7 @@ export class UqMan {
     readonly historyArr: History[] = [];
     readonly pendingArr: Pending[] = [];
 
+    /*
     async loadEntities(): Promise<string> {
         try {
             let entities = this.localEntities.get();
@@ -400,18 +412,30 @@ export class UqMan {
             return err as any;
         }
     }
+    */
 
-    buildEntities(entities: any) {
-        if (entities === undefined) {
-            debugger;
-        }
-        this.localEntities.set(entities);
-        let { access, tuids, role, version, ids } = entities;
-        this.uqVersion = version;
+    buildEntities(/*entities: any*/) {
+        // this.localEntities.set(entities);
+        // let { access, tuids, role, version, ids } = entities;
+        // this.uqVersion = version;
+        /*
         this.Role = this.buildRole(role?.names);
         this.buildTuids(tuids);
         this.buildIds(ids);
         this.buildAccess(access);
+        */
+        this.buildEntityFromUqSchema();
+    }
+
+    private buildEntityFromUqSchema() {
+        for (let i in this.uqSchema) {
+            let schema = this.uqSchema[i];
+            let { name, type } = schema;
+            if (name === undefined || type === undefined) continue;
+            let entity = this.fromType(name, type);
+            if (entity === undefined) continue;
+            entity.buildSchema(schema);
+        }
     }
 
     private buildRole(roleNames: { [key: string]: string[] }) {
@@ -611,10 +635,10 @@ export class UqMan {
         this.ixArr.push(ix);
         return ix;
     }
-    private fromType(name: string, type: string) {
-        let parts = type.split('|');
-        type = parts[0];
-        let id = Number(parts[1]);
+    private fromType(name: string, type: string): Entity {
+        let arr = type.split('|');
+        type = arr[0];
+        let id = Number(arr[1]);
         switch (type) {
             default:
                 break;
@@ -624,17 +648,17 @@ export class UqMan {
                 //let tuid = this.newTuid(name, id);
                 //tuid.sys = false;
                 break;
-            case 'id': this.newID(name, id); break;
-            case 'idx': this.newIDX(name, id); break;
-            case 'ix': this.newIX(name, id); break;
-            case 'action': this.newAction(name, id); break;
-            case 'query': this.newQuery(name, id); break;
-            case 'book': this.newBook(name, id); break;
-            case 'map': this.newMap(name, id); break;
-            case 'history': this.newHistory(name, id); break;
-            case 'sheet': this.newSheet(name, id); break;
-            case 'pending': this.newPending(name, id); break;
-            case 'enum': this.newEnum(name, id); break;
+            case 'id': return this.newID(name, id);
+            case 'idx': return this.newIDX(name, id);
+            case 'ix': return this.newIX(name, id);
+            case 'action': return this.newAction(name, id);
+            case 'query': return this.newQuery(name, id);
+            case 'book': return this.newBook(name, id);
+            case 'map': return this.newMap(name, id);
+            case 'history': return this.newHistory(name, id);
+            case 'sheet': return this.newSheet(name, id);
+            case 'pending': return this.newPending(name, id);
+            case 'enum': return this.newEnum(name, id);
         }
     }
     private fromObj(name: string, obj: any) {
@@ -707,45 +731,6 @@ export class UqMan {
             || this.entities[name.toLowerCase()] !== undefined;
     }
 
-    createProxy(): any {
-        let ret = new Proxy(this.entities, {
-            get: (target, key, receiver) => {
-                let lk = (key as string).toLowerCase();
-                if (lk[0] === '$') {
-                    switch (lk) {
-                        default: throw new Error(`unknown ${lk} property in uq`);
-                        case '$': return this.$proxy;
-                        case '$name': return this.name;
-                    }
-                }
-                let ret = target[lk];
-                if (ret !== undefined) return ret;
-                let func: any = (this as any)[key];
-                if (func !== undefined) return func;
-                this.errUndefinedEntity(String(key));
-            }
-        });
-        this.proxy = ret;
-        this.$proxy = new Proxy(this.entities, {
-            get: (target, key, receiver) => {
-                let lk = (key as string).toLowerCase();
-                let ret: any = target[lk];
-                if (ret !== undefined) return ret;
-                let func: any = (this as any)['$' + (key as string)];
-                if (func !== undefined) return func;
-                this.errUndefinedEntity(String(key));
-            }
-        });
-        //this.idCache = new IDCache(this);
-        return ret;
-    }
-
-    private errUndefinedEntity(entity: string) {
-        let err = new Error(`entity ${this.name}.${entity} not defined`);
-        err.name = UqError.undefined_entity;
-        throw err;
-    }
-
     private async apiPost(api: string, resultType: EnumResultType, apiParam: any): Promise<any> {
         if (resultType === EnumResultType.sql) api = 'sql-' + api;
         let ret = await this.uqApi.post(IDPath(api), apiParam);
@@ -796,6 +781,13 @@ export class UqMan {
         return obj;
     }
 
+    protected Biz = async (id: number, act: string): Promise<void> => {
+        await this.uqApi.bizSheet(id, act);
+    }
+    protected BizSheetAct = async (id: number, detail: string, act: string): Promise<any[]> => {
+        let ret = await this.uqApi.bizSheetAct(id, detail, act);
+        return ret;
+    }
     protected Acts = async (param: any): Promise<any> => {
         //let apiParam = this.ActsApiParam(param);
         let ret = await this.apiActs(param, EnumResultType.data); // await this.apiPost('acts', apiParam);
@@ -849,8 +841,11 @@ export class UqMan {
     }
 
     protected ActIX = async (param: ParamActIX<any>): Promise<number[]> => {
-        let ret = await this.apiActIX(param, EnumResultType.data);
-        return (ret[0].ret as string).split('\t').map(v => Number(v));
+        let result = await this.apiActIX(param, EnumResultType.data);
+        let str: string = result[0].ret as string;
+        let arr = str.trim().split('\t');
+        let ret = arr.map(v => Number(v));
+        return ret;
     }
 
     protected $ActIX = async (param: ParamActIX<any>): Promise<string> => {
@@ -934,8 +929,8 @@ export class UqMan {
     protected ActDetail = async (param: ParamActDetail<any, any>) => {
         let ret = await this.apiActDetail(param, EnumResultType.data);
         let val: string = ret[0].ret;
-        let parts = val.split('\n');
-        let items = parts.map(v => v.split('\t'));
+        let arr = val.split('\n');
+        let items = arr.map(v => v.split('\t'));
         ret = {
             main: ids(items[0])[0],
             detail: ids(items[1]),
@@ -1026,6 +1021,10 @@ export class UqMan {
         return this.entityTypes[typeId] as ID;
     };
 
+    protected IDFromName = (IDName: string): ID => {
+        return this.ids[IDName];
+    }
+
     protected $IDNO = async (param: ParamIDNO): Promise<string> => {
         return await this.apiIDNO(param, EnumResultType.sql) as any as string;
     }
@@ -1056,16 +1055,21 @@ export class UqMan {
     }
     private async apiID(param: ParamID, resultType: EnumResultType): Promise<any> {
         let { IDX } = param;
-        //this.checkParam(null, IDX, null, id, null, page);
-        let ret = await this.apiPost('id', resultType, {
+        let nParam = {
             ...param,
             IDX: this.IDXToString(IDX),
-        });
+        }
+        let ret = await this.apiPost('id', resultType, nParam);
         return ret;
     }
 
     private cache: { [id: number]: object } = {};
     private cachePromise: { [id: number]: Promise<any> } = {};
+    protected idCache = (id: number) => {
+        let ret = this.cache[id];
+        return ret;
+    }
+    // 返回可能是数组
     protected idObj = async (id: number) => {
         let obj = this.cache[id];
         if (obj === undefined) {
@@ -1075,11 +1079,36 @@ export class UqMan {
                 this.cachePromise[id] = promise;
             }
             let ret = await promise;
-            obj = ret[0];
-            this.cache[id] = (obj === undefined) ? null : obj;
+            if (ret !== undefined) {
+                obj = ret[0];
+                this.cache[id] = (obj === undefined) ? null : obj;
+                let len = ret.length;
+                for (let i = 1; i < len; i++) {
+                    let objEx = ret[i];
+                    let { id: idEx } = objEx === undefined ? null : objEx;
+                    this.cache[idEx] = objEx;
+                }
+            }
+            else {
+                this.cache[id] = null;
+            }
             delete this.cachePromise[id];
         }
         return obj;
+    }
+
+    protected idJoins = async (id: number) => {
+        let ret = await this.apiPost('id-joins', EnumResultType.data, { id });
+        let arr = (ret as any[]).shift();
+        let resultMain = arr?.[0];
+        if (resultMain === undefined) {
+            throw new Error('id-joins return no value');
+        }
+        let { ID: IDName } = resultMain;
+        let ID = this.IDFromName(IDName);
+        let resultJoins = ret;
+        let [uppackedMain, uppackedJoins] = ID.unpackJoins(resultMain, resultJoins);
+        return { ID, main: uppackedMain, joins: uppackedJoins };
     }
 
     protected ID = async (param: ParamID): Promise<any[]> => {

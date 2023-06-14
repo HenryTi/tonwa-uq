@@ -1,5 +1,4 @@
 import { UQsMan } from "./uqsMan";
-import { CenterAppApi } from '../net';
 const uqDataLocalStore = 'uq-data-local-storage';
 export class UQsLoader {
     net;
@@ -21,7 +20,7 @@ export class UQsLoader {
     async loadUqs() {
         this.uqsMan = new UQsMan(this.net, this.uqsSchema);
         let uqs = await this.loadUqData(this.uqConfigs);
-        return await this.uqsMan.buildUqs(uqs, this.uqConfigVersion, this.uqConfigs, this.isBuildingUQ);
+        this.uqsMan.buildUqs(uqs, this.uqConfigVersion, this.uqConfigs, this.isBuildingUQ);
     }
     async loadUqData(uqConfigs) {
         let uqs = uqConfigs.map(v => {
@@ -29,7 +28,8 @@ export class UQsLoader {
             let { name: owner, alias: ownerAlias } = dev;
             return { owner, ownerAlias, name, version, alias };
         });
-        let ret = this.loadLocal(uqs);
+        /*
+        let ret: UqData[] = this.loadLocal(uqs);
         if (!ret) {
             let centerAppApi = new CenterAppApi(this.net, 'tv/');
             try {
@@ -51,6 +51,22 @@ export class UQsLoader {
             ret[i].ownerAlias = ownerAlias;
             ret[i].uqAlias = alias;
         }
+        return ret;
+        */
+        let ret = uqs.map(v => {
+            let { name, alias, owner, ownerAlias } = v;
+            let uqData;
+            uqData = {
+                id: undefined,
+                uqName: name,
+                uqAlias: alias,
+                uqOwner: owner,
+                ownerAlias,
+                access: undefined,
+                newVersion: undefined,
+            };
+            return uqData;
+        });
         return ret;
     }
     loadLocal(uqs) {

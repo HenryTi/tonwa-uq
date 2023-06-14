@@ -1,15 +1,15 @@
 export function capitalCase(s) {
-    let parts = s.split(/[-._]/);
-    return parts.map(v => firstCharUppercase(v)).join('_');
+    let arr = s.split(/[-._]/);
+    return arr.map(v => firstCharUppercase(v)).join('_');
 }
 export function camelCase(s) {
-    let parts = s.split(/[-._]/);
-    let len = parts.length;
-    parts[0] = firstCharLowercase(parts[0]);
+    let arr = s.split(/[-._]/);
+    let len = arr.length;
+    arr[0] = firstCharLowercase(arr[0]);
     for (let i = 1; i < len; i++) {
-        parts[1] = firstCharUppercase(parts[1]);
+        arr[1] = firstCharUppercase(arr[1]);
     }
-    return parts.join('_');
+    return arr.join('_');
 }
 const aCode = 'a'.charCodeAt(0);
 const zCode = 'z'.charCodeAt(0);

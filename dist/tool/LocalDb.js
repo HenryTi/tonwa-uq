@@ -91,7 +91,7 @@ class Local {
         this.localDb.setItem(k, value);
     }
     removeItem(key) {
-        let k = this.keyForSet(key);
+        let k = this.keyForRemove(key);
         if (k === undefined)
             return;
         localStorage.removeItem(k);

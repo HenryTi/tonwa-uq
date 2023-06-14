@@ -1,3 +1,4 @@
+import { WritableAtom } from "jotai";
 import { UqMan } from "./uqMan";
 export interface UserUnit<T = any> {
     id: number;
@@ -10,7 +11,10 @@ export interface UserUnit<T = any> {
     name: string;
     nick: string;
     icon: string;
-    roles: string[];
+    rolesAtom: WritableAtom<string[], any, any>;
+    permits: {
+        [permit: string]: boolean;
+    };
     entity: string;
     addBy: number;
 }
@@ -28,21 +32,24 @@ export declare enum EnumSysRole {
 }
 export declare class UqUnit {
     private readonly uqMan;
-    private myUnitsColl;
-    private userUnit0;
-    myUnits: UserUnit[];
+    private mySitesColl;
+    userUnit0: UserUnit;
+    mySites: UserUnit[];
     userUnit: UserUnit;
     constructor(uqMan: UqMan);
+    login(): Promise<void>;
     loginUnit(userUnit: UserUnit): void;
     logoutUnit(): void;
     hasRole(role: string[] | string): boolean;
     Poked(): Promise<boolean>;
     reloadMyRoles(): Promise<void>;
-    loadMyRoles(): Promise<void>;
+    setSite(site: number): Promise<void>;
+    private loadMyRoles;
     loadUnitUsers(): Promise<UnitRoles>;
     addAdmin(user: number, admin: EnumSysRole, assigned: string): Promise<any>;
     addUser(user: number, assigned: string): Promise<any>;
-    setUserRole(user: number, action: 'add' | 'del' | 'clear', role: string): Promise<void>;
+    setUserRole(user: number, role: string, on: boolean): Promise<void>;
+    clearUserRole(user: number): Promise<void>;
     quitOwner(): Promise<void>;
     delAdmin(user: number, admin: EnumSysRole): Promise<void>;
 }

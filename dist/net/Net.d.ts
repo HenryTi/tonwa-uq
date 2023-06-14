@@ -43,7 +43,6 @@ export declare class Net {
     clearCenterToken(): void;
     getCenterChannel(): HttpChannel;
     buildUqUrl(db: string, url: string, urlTest: string): string;
-    private isPromise;
     getHttpChannel(uq: string): Promise<HttpChannel>;
     private initUqToken;
 }

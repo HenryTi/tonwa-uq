@@ -3,7 +3,7 @@ import { LocalCache } from '../tool';
 import { UqMan, Field, ArrFields, FieldMap } from './uqMan';
 import { Tuid } from './tuid';
 export declare abstract class Entity {
-    private jName;
+    jName: string;
     schema: any;
     ver: number;
     sys?: boolean;
@@ -13,7 +13,6 @@ export declare abstract class Entity {
     readonly schemaLocal: LocalCache;
     readonly uqApi: UqApi;
     abstract get typeName(): string;
-    get sName(): string;
     fields: Field[];
     arrFields: ArrFields[];
     returns: ArrFields[];
@@ -35,7 +34,7 @@ export declare abstract class Entity {
     tuidFromName(fieldName: string, arrName?: string): Tuid;
     buildParams(params: any): any;
     private buildFieldsParams;
-    buildDateTimeParam(val: any): number;
+    buildDateTimeParam(val: any): number | "";
     buildDateParam(val: any): string;
     pack(data: any): string;
     private escape;
@@ -48,7 +47,7 @@ export declare abstract class Entity {
         [name: string]: any[];
     };
     protected unpackRow(ret: any, fields: Field[], data: string, p: number, sep?: number): number;
-    private to;
+    protected to(ret: any, v: string, f: Field): any;
     private reverseNT;
     private unpackArr;
 }

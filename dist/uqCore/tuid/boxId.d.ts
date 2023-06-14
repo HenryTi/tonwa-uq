@@ -9,4 +9,4 @@ export interface BoxId {
         id: number;
     } | number): boolean;
 }
-export declare type CreateBoxId = (tuid: Tuid, id: number) => BoxId;
+export type CreateBoxId = (tuid: Tuid, id: number) => BoxId;

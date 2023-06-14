@@ -12,7 +12,7 @@ import { UqEnum } from './enum';
 import { Entity } from './entity';
 import { ID, IX, IDX } from './ID';
 import { Net } from '../net';
-export declare type FieldType = 'id' | 'tinyint' | 'smallint' | 'int' | 'bigint' | 'dec' | 'float' | 'double' | 'char' | 'text' | 'datetime' | 'date' | 'time' | 'timestamp' | 'enum';
+export type FieldType = 'id' | 'tinyint' | 'smallint' | 'int' | 'bigint' | 'dec' | 'float' | 'double' | 'char' | 'text' | 'datetime' | 'date' | 'time' | 'timestamp' | 'enum';
 export declare function fieldDefaultValue(type: FieldType): 0 | "" | "2000-1-1" | "0:00";
 export interface Field {
     name: string;
@@ -209,13 +209,20 @@ export interface ParamIDTree {
     page?: ParamPage;
 }
 export interface Uq {
-    $: Uq;
-    $name: string;
+    $: UqMan;
     Role: {
         [key: string]: string[];
     };
     idObj<T = any>(id: number): Promise<T>;
+    idJoins(id: number): Promise<{
+        ID: ID;
+        main: [string, any];
+        joins: [string, any[]][];
+    }>;
+    idCache<T = any>(id: number): T;
     IDValue<T>(type: string, value: string): T;
+    Biz(id: number, act: string): Promise<void>;
+    BizSheetAct(id: number, detail: string, act: string): Promise<any[]>;
     Acts(param: any): Promise<any>;
     ActIX<T>(param: ParamActIX<T>): Promise<number[]>;
     ActIXSort(param: ParamActIXSort): Promise<void>;
@@ -224,6 +231,7 @@ export interface Uq {
     QueryID<T>(param: ParamQueryID): Promise<T[]>;
     IDNO(param: ParamIDNO): Promise<string>;
     IDEntity(typeId: number): ID;
+    IDFromName(IDName: string): ID;
     ID<T = any>(param: ParamID): Promise<T[]>;
     IXr<T>(param: ParamIX): Promise<T[]>;
     KeyID<T>(param: ParamKeyID): Promise<T[]>;
@@ -287,6 +295,8 @@ export declare class UqMan {
     readonly id: number;
     readonly net: Net;
     readonly uqApi: UqApi;
+    readonly baseUrl = "tv/";
+    unit: number;
     proxy: any;
     $proxy: any;
     uqVersion: number;
@@ -295,6 +305,7 @@ export declare class UqMan {
     getID(name: string): ID;
     getIDX(name: string): IDX;
     getIX(name: string): IX;
+    clearLocalEntites(): void;
     private roles;
     getRoles(): Promise<string[]>;
     tuid(name: string): Tuid;
@@ -322,8 +333,8 @@ export declare class UqMan {
     readonly mapArr: Map[];
     readonly historyArr: History[];
     readonly pendingArr: Pending[];
-    loadEntities(): Promise<string>;
-    buildEntities(entities: any): void;
+    buildEntities(): void;
+    private buildEntityFromUqSchema;
     private buildRole;
     private buildTuids;
     private buildIds;
@@ -354,11 +365,11 @@ export declare class UqMan {
     getUqKey(): string;
     getUqKeyWithConfig(): string;
     hasEntity(name: string): boolean;
-    createProxy(): any;
-    private errUndefinedEntity;
     private apiPost;
     private apiActs;
     private buildValue;
+    protected Biz: (id: number, act: string) => Promise<void>;
+    protected BizSheetAct: (id: number, detail: string, act: string) => Promise<any[]>;
     protected Acts: (param: any) => Promise<any>;
     protected AdminGetList: () => Promise<any[]>;
     protected AdminSetMe: () => Promise<void>;
@@ -389,6 +400,7 @@ export declare class UqMan {
     private apiIDNO;
     protected IDNO: (param: ParamIDNO) => Promise<string>;
     protected IDEntity: (typeId: number) => ID;
+    protected IDFromName: (IDName: string) => ID;
     protected $IDNO: (param: ParamIDNO) => Promise<string>;
     private apiIDDetailGet;
     IDDetailGet: (param: ParamIDDetailGet) => Promise<any>;
@@ -397,7 +409,13 @@ export declare class UqMan {
     private apiID;
     private cache;
     private cachePromise;
+    protected idCache: (id: number) => object;
     protected idObj: (id: number) => Promise<object>;
+    protected idJoins: (id: number) => Promise<{
+        ID: ID;
+        main: [string, any];
+        joins: [string, any[]][];
+    }>;
     protected ID: (param: ParamID) => Promise<any[]>;
     protected $ID: (param: ParamID) => Promise<string>;
     private apiKeyID;

@@ -26,13 +26,15 @@ export class Entity {
     typeId;
     schemaLocal;
     uqApi;
-    get sName() { return this.jName || this.name; }
+    // get sName(): string { return this.name || this.jname }
     fields;
     arrFields;
     returns;
     constructor(uq, name, typeId) {
+        if (name === undefined)
+            debugger;
         this.uq = uq;
-        this.name = name;
+        this.name = name.toLowerCase();
         this.typeId = typeId;
         this.sys = this.name.indexOf('$') >= 0;
         this.schemaLocal = this.uq.localMap.item(this.name); // new EntityCache(this);
@@ -225,7 +227,7 @@ export class Entity {
             default:
                 debugger;
                 throw new Error('escape datetime field in pack data error: value=' + val);
-            case 'undefined': return undefined;
+            case 'undefined': return '';
             case 'object':
                 dt = val;
                 break;
@@ -416,6 +418,7 @@ export class Entity {
     }
     // ch=8 backspace, 有什么特别意义吗？看不懂 2022-8-16
     // 根据代码看起来，像是null的意思
+    // 2023-3-16：ch=8，就是null
     unpackRow(ret, fields, data, p, sep = 9) {
         let ch0 = 0, ch = 0, c = p, i = 0, len = data.length, fLen = fields.length;
         const setFieldValue = () => {
@@ -494,17 +497,11 @@ export class Entity {
             case 'text':
             case 'char':
                 return this.reverseNT(v);
-            //case 'time':
             case 'datetime':
             case 'timestamp':
                 let n = Number(v);
                 let date = isNaN(n) === true ? new Date(v) : new Date(n * 1000);
                 return date;
-            /*
-            case 'date':
-                let parts = v.split('-');
-                return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
-            */
             case 'enum':
             case 'tinyint':
             case 'smallint':

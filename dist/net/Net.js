@@ -2,6 +2,7 @@ import { UqTokenApi } from "./uqApi";
 import { UserApi } from "./userApi";
 import { HttpChannel } from './httpChannel';
 import { buildHosts } from './host';
+import { isPromise } from "../tool";
 export class Net {
     centerUrl;
     uqDebug;
@@ -99,11 +100,6 @@ export class Net {
         }
         return `${url}uq/${testOrProd}/${db}/`;
     }
-    isPromise(obj) {
-        return (!!obj &&
-            (typeof obj === "object" || typeof obj === "function") &&
-            typeof obj.then === "function");
-    }
     async getHttpChannel(uq) {
         let channel = this.uqChannels[uq];
         if (channel === undefined) {
@@ -115,7 +111,7 @@ export class Net {
             });
             return await channel;
         }
-        if (this.isPromise(channel) === false)
+        if (isPromise(channel) === false)
             return channel;
         return await channel;
     }

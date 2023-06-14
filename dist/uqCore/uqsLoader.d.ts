@@ -13,11 +13,11 @@ export declare class UQsLoader {
     constructor(net: Net, uqConfigVersion: string, uqConfigs: UqConfig[], uqsSchema: {
         [uq: string]: any;
     });
-    build(): Promise<string[]>;
-    loadUqs(): Promise<string[]>;
+    build(): Promise<void>;
+    loadUqs(): Promise<void>;
     private loadUqData;
     private loadLocal;
 }
 export declare class UQsBuildingLoader extends UQsLoader {
-    build(): Promise<string[]>;
+    build(): Promise<void>;
 }

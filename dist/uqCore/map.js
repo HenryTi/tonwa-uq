@@ -15,6 +15,8 @@ export class UqMap extends Entity {
         for (let i in actions) {
             let actionSchema = actions[i];
             let { name } = actionSchema;
+            if (name === undefined)
+                continue;
             let action = this.uq.newAction(name, undefined);
             action.setSchema(actionSchema);
             action.buildFieldsTuid();
@@ -23,6 +25,8 @@ export class UqMap extends Entity {
         for (let i in queries) {
             let querySchema = queries[i];
             let { name } = querySchema;
+            if (name === undefined)
+                continue;
             let query = this.uq.newQuery(name, undefined);
             query.setSchema(querySchema);
             query.buildFieldsTuid();

@@ -1,59 +1,29 @@
 import { ApiBase } from './apiBase';
 export class UqApi extends ApiBase {
-    // private inited = false;
-    // uqOwner: string;
-    // uqName: string;
     uq;
-    constructor(net, basePath, uq /* uqOwner: string, uqName: string*/) {
-        super(net, basePath);
-        this.uq = uq;
-        //        if (uqName) {
-        // this.uqOwner = uqOwner;
-        // this.uqName = uqName;
-        //            this.uq = uqOwner + '/' + uqName;
-        //        }
+    constructor(uqMan) {
+        let { net, baseUrl } = uqMan;
+        super(net, baseUrl);
+        this.uq = uqMan;
     }
-    /*
-    private async init() {
-        if (this.inited === true) return;
-        await this.net.buildAppUq(this.uq, this.uqOwner, this.uqName);
-        this.inited = true;
-    }
-    */
     async getHttpChannel() {
-        return await this.net.getHttpChannel(this.uq);
-        /*
-        let { uqChannels } = this.net;
-        let channel = uqChannels[this.uq];
-        if (channel !== undefined) {
-            if (Array.isArray(channel) === false) return channel as HttpChannel;
-        }
-        else {
-            channel = uqChannels[this.uq] = [];
-        }
-        let arr = channel as PromiseValue<any>[];
-        return new Promise(async (resolve, reject) => {
-            arr.push({ resolve, reject });
-            if (arr.length !== 1) return;
-            let uqToken = this.net.getUqToken(this.uq); //, this.uqOwner, this.uqName);
-            if (!uqToken) {
-                //debugger;
-                this.inited = false;
-                await this.init();
-                uqToken = this.net.getUqToken(this.uq);
-            }
-            let { url, token } = uqToken;
-            // this.token = token;
-            channel = new HttpChannel(this.net, url, token);
-            uqChannels[this.uq] = channel;
-            for (let pv of arr) {
-                pv.resolve(channel);
-            }
-        });
-        */
+        return await this.net.getHttpChannel(this.uq.name);
+    }
+    customHeader() {
+        let { unit } = this.uq;
+        if (unit === undefined)
+            return;
+        return { unit: String(unit) };
     }
     async loadEntities() {
         let ret = await this.get('entities');
+        return ret;
+    }
+    async bizSheet(id, act) {
+        await this.post('biz', { id, act });
+    }
+    async bizSheetAct(id, detail, act) {
+        let ret = await this.post('biz-sheet-act', { id, detail, act });
         return ret;
     }
     async getAdmins() {
@@ -74,9 +44,9 @@ export class UqApi extends ApiBase {
         let ret = await this.get('get-roles');
         if (!ret)
             return null;
-        let parts = ret.split('|');
+        let arr = ret.split('|');
         let s = [];
-        for (let p of parts) {
+        for (let p of arr) {
             p = p.trim();
             if (!p)
                 continue;

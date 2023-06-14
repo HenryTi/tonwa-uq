@@ -31,10 +31,11 @@ export class EntityCaller extends Caller {
     xresult(res) { return res; }
     get headers() {
         let { ver, uq } = this.entity;
-        let { uqVersion } = uq;
+        let { uqVersion, unit } = uq;
         return {
             uq: `${uqVersion}`,
             en: `${ver}`,
+            unit: unit === undefined ? undefined : String(unit),
         };
     }
     async retry(schema) {
@@ -47,7 +48,7 @@ export class EntityCaller extends Caller {
     rebuildSchema(schema) {
         let { uq, entity } = schema;
         if (uq !== undefined) {
-            this.entity.uq.buildEntities(uq);
+            this.entity.uq.buildEntities( /*uq*/);
         }
         if (entity !== undefined) {
             this.entity.setSchema(entity);

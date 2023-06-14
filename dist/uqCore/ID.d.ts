@@ -22,6 +22,8 @@ export declare class UqID<M extends {
     loadValuesFromIds(divName: string, ids: number[]): Promise<M[]>;
     cacheTuidFieldValues(value: any): void;
     unpackTuidIds(values: string[]): any[];
+    unpackJoins(resultMain: any, resultJoins: any[][]): [[string, any], [string, any[]][]];
+    private unpackStr;
 }
 export declare class ID extends UqID<any> {
 }

@@ -1,10 +1,8 @@
 import { UqMan } from './uqMan';
-import { UqError } from '../tool';
 export class UQsMan {
     net;
     uqsSchema;
     collection;
-    proxy;
     uqMans = [];
     constructor(net, uqsSchema) {
         this.net = net;
@@ -12,8 +10,8 @@ export class UQsMan {
         this.uqMans = [];
         this.collection = {};
     }
-    async buildUqs(uqDataArr, version, uqConfigs, isBuildingUQ) {
-        await this.init(uqDataArr);
+    buildUqs(uqDataArr, version, uqConfigs, isBuildingUQ) {
+        this.init(uqDataArr);
         let localMap = this.net.createLocalMap('$app');
         let localCacheVersion = localMap.child('version');
         let cacheVersion = localCacheVersion.get();
@@ -23,14 +21,15 @@ export class UQsMan {
             }
             localCacheVersion.set(version);
         }
-        let retErrors = await this.load();
-        if (retErrors.length > 0)
-            return retErrors;
+        // let retErrors = await 
+        this.buildUqEntities();
+        /*
+        if (retErrors.length > 0) return retErrors;
         if (isBuildingUQ === false) {
             this.setTuidImportsLocal();
         }
-        if (retErrors.length > 0)
-            return retErrors;
+        if (retErrors.length > 0) return retErrors;
+        */
         if (uqConfigs) {
             for (let uqConfig of uqConfigs) {
                 let { dev, name, alias } = uqConfig;
@@ -40,7 +39,7 @@ export class UQsMan {
                 uq.config = uqConfig;
             }
         }
-        this.proxy = this.buildUQs();
+        // this.proxy = this.buildUQs();
     }
     uq(uqName) {
         return this.collection[uqName.toLowerCase()];
@@ -52,8 +51,7 @@ export class UQsMan {
         let roles = await uqMan.getRoles();
         return roles;
     }
-    async init(uqsData) {
-        //let promiseInits: PromiseLike<void>[] = [];
+    init(uqsData) {
         for (let uqData of uqsData) {
             let { uqOwner, ownerAlias, uqName, uqAlias } = uqData;
             // 原名加入collection
@@ -67,7 +65,6 @@ export class UQsMan {
                 let uqSchema = this.uqsSchema[uqFullName];
                 uq = new UqMan(this.net, uqData, uqSchema);
                 this.collection[uqFullName] = uq;
-                //promiseInits.push(uq.init());
             }
             this.uqMans.push(uq);
             let lower = uqFullName.toLowerCase();
@@ -81,11 +78,10 @@ export class UQsMan {
             lower = uqFullName.toLowerCase();
             this.collection[lower] = uq;
         }
-        //await Promise.all(promiseInits);
     }
-    async load() {
-        let retErrors = [];
-        let promises = [];
+    buildUqEntities() {
+        //let retErrors: string[] = [];
+        //let promises: PromiseLike<string>[] = [];
         //let lowerUqNames:string[] = [];
         // collection有小写名字，还有正常名字
         //for (let i in this.collection) {
@@ -94,8 +90,10 @@ export class UQsMan {
             //if (lowerUqNames.indexOf(lower) >= 0) continue;
             //lowerUqNames.push(lower);
             //let uq = this.collection[i];
-            promises.push(uqMan.loadEntities());
+            // promises.push(uqMan.loadEntities());
+            uqMan.buildEntities();
         }
+        /*
         let results = await Promise.all(promises);
         for (let result of results) {
             let retError = result; // await cUq.loadSchema();
@@ -104,16 +102,16 @@ export class UQsMan {
             }
         }
         return retErrors;
+        */
     }
-    buildUQs() {
-        let uqs = {};
-        function setUq(uqKey, proxy) {
-            if (!uqKey)
-                return;
+    /*
+    private buildUQs(): any {
+        let uqs: any = {};
+        function setUq(uqKey: string, proxy: any): void {
+            if (!uqKey) return;
             let lower = uqKey.toLowerCase();
             uqs[uqKey] = proxy;
-            if (lower !== uqKey)
-                uqs[lower] = proxy;
+            if (lower !== uqKey) uqs[lower] = proxy;
         }
         for (let uqMan of this.uqMans) {
             let proxy = uqMan.createProxy();
@@ -122,20 +120,21 @@ export class UQsMan {
         }
         return new Proxy(uqs, {
             get: (target, key, receiver) => {
-                let lk = key.toLowerCase();
+                let lk = (key as string).toLowerCase();
                 let ret = target[lk];
-                if (ret !== undefined)
-                    return ret;
+                if (ret !== undefined) return ret;
                 this.errUndefinedUq(String(key));
             },
         });
     }
-    errUndefinedUq(uq) {
+
+    private errUndefinedUq(uq: string) {
         let message = `UQ ${uq} not defined`;
         let err = new Error(message);
-        err.name = UqError.undefined_uq;
+        err.name = UqError.unexist_uq;
         throw err;
     }
+*/
     getUqMans() {
         return this.uqMans;
     }

@@ -3,11 +3,13 @@ export async function refetchApi(channel, url, options, resolve, reject) {
 }
 export class ApiBase {
     net;
-    // protected token: string;
     path;
     constructor(net, path) {
         this.net = net;
         this.path = path || '';
+    }
+    customHeader() {
+        return undefined;
     }
     async xcall(caller) {
         let channel = await this.getHttpChannel();
@@ -19,19 +21,19 @@ export class ApiBase {
     }
     async get(path, params = undefined) {
         let channel = await this.getHttpChannel();
-        return await channel.get(this.path + path, params);
+        return await channel.get(this.path + path, params, this.customHeader());
     }
     async post(path, params) {
         let channel = await this.getHttpChannel();
-        return await channel.post(this.path + path, params);
+        return await channel.post(this.path + path, params, this.customHeader());
     }
     async put(path, params) {
         let channel = await this.getHttpChannel();
-        return await channel.put(this.path + path, params);
+        return await channel.put(this.path + path, params, this.customHeader());
     }
     async delete(path, params) {
         let channel = await this.getHttpChannel();
-        return await channel.delete(this.path + path, params);
+        return await channel.delete(this.path + path, params, this.customHeader());
     }
 }
 //# sourceMappingURL=apiBase.js.map

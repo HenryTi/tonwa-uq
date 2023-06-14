@@ -67,10 +67,6 @@ export class UqSheet extends Entity {
         };
     }
     async getSheet(id) {
-        /*
-        await this.loadSchema();
-        let ret = await this.uqApi.getSheet(this.name, id);
-        */
         let ret = await new GetSheetCaller(this, id).request();
         if (ret[0].length === 0)
             return await this.getArchive(id);

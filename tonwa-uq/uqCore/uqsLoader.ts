@@ -31,10 +31,10 @@ export class UQsLoader {
     }
 
     // 返回 errors, 每个uq一行
-    async loadUqs(): Promise<string[]> {
+    async loadUqs(): Promise<void> {
         this.uqsMan = new UQsMan(this.net, this.uqsSchema);
         let uqs = await this.loadUqData(this.uqConfigs);
-        return await this.uqsMan.buildUqs(uqs, this.uqConfigVersion, this.uqConfigs, this.isBuildingUQ);
+        this.uqsMan.buildUqs(uqs, this.uqConfigVersion, this.uqConfigs, this.isBuildingUQ);
     }
 
     private async loadUqData(uqConfigs: UqConfig[]): Promise<UqData[]> {
@@ -46,6 +46,7 @@ export class UQsLoader {
             }
         );
 
+        /*
         let ret: UqData[] = this.loadLocal(uqs);
         if (!ret) {
             let centerAppApi = new CenterAppApi(this.net, 'tv/');
@@ -68,6 +69,22 @@ export class UQsLoader {
             ret[i].ownerAlias = ownerAlias;
             ret[i].uqAlias = alias;
         }
+        return ret;
+        */
+        let ret = uqs.map(v => {
+            let { name, alias, owner, ownerAlias } = v;
+            let uqData: UqData;
+            uqData = {
+                id: undefined,
+                uqName: name,
+                uqAlias: alias,
+                uqOwner: owner,
+                ownerAlias,
+                access: undefined,
+                newVersion: undefined,
+            };
+            return uqData;
+        });
         return ret;
     }
 

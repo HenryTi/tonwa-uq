@@ -1,4 +1,4 @@
-export * from './uqsLoader';
+export * from './createUQsMan';
 export * from './uqMan';
 export * from './entity';
 export * from './action';

@@ -1,11 +1,17 @@
 import { HttpChannel } from './httpChannel';
 import { ApiBase } from './apiBase';
 import { Net } from './Net';
+import { UqMan } from '../uqCore';
 export declare class UqApi extends ApiBase {
-    uq: string;
-    constructor(net: Net, basePath: string, uq: string);
+    private readonly uq;
+    constructor(uqMan: UqMan);
     protected getHttpChannel(): Promise<HttpChannel>;
+    protected customHeader(): {
+        [key: string]: string;
+    };
     loadEntities(): Promise<any>;
+    bizSheet(id: number, act: string): Promise<void>;
+    bizSheetAct(id: number, detail: string, act: string): Promise<any[]>;
     getAdmins(): Promise<any[]>;
     setMeAdmin(): Promise<void>;
     setAdmin(user: number, role: number, assigned: string): Promise<void>;

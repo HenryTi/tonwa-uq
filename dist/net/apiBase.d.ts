@@ -7,6 +7,9 @@ export declare abstract class ApiBase {
     protected path: string;
     constructor(net: Net, path: string);
     protected abstract getHttpChannel(): Promise<HttpChannel>;
+    protected customHeader(): {
+        [key: string]: string;
+    };
     xcall(caller: Caller<any>): Promise<any>;
     call(url: string, method: string, body: any): Promise<any>;
     get(path: string, params?: any): Promise<any>;
